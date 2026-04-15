@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestRoom – Платформа тестирования</title>
+    <style>
+        /* ----- СТРОГИЙ МИНИМАЛИСТИЧНЫЙ СТИЛЬ ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1e1e1e;
+        }
+        .app {
+            max-width: 900px;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        h1, h2, h3 {
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        .subtitle {
+            color: #666;
+            margin-bottom: 32px;
+            border-left: 4px solid #1e1e1e;
+            padding-left: 20px;
+        }
+        /* ----- ФОРМЫ АВТОРИЗАЦИИ ----- */
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .tabs {
+            display: flex;
+            gap: 1px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #eee;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .tab.active {
+            color: #1e1e1e;
+            border-bottom-color: #1e1e1e;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            color: #444;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            background: #fff;
+            transition: border 0.15s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #1e1e1e;
+        }
+        button {
+            padding: 12px 24px;
+            border: 1.5px solid #1e1e1e;
+            background: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: 0.1s;
+        }
+        button.primary {
+            background: #1e1e1e;
+            color: white;
+        }
+        button.primary:hover {
+            background: #333;
+        }
+        button.danger {
+            border-color: #c00;
+            color: #c00;
+        }
+        button.danger:hover {
+            background: #c00;
+            color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .error-message {
+            color: #c00;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        /* ----- ГЛАВНОЕ МЕНЮ ----- */
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .main-menu {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+        .menu-btn {
+            flex: 1;
+            padding: 24px;
+            background: #fff;
+            border: 2px solid #ddd;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+        .menu-btn:hover {
+            border-color: #1e1e1e;
+            background: #f9f9f9;
+        }
+        /* ----- МОДАЛЬНЫЕ ОКНА ----- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px;
+            border: 1px solid #ccc;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+        /* ----- СПИСОК ТЕСТОВ (АДМИН) ----- */
+        .tests-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .test-card {
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+        .test-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .test-code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #eee;
+            padding: 4px 12px;
+            font-weight: 600;
+        }
+        .test-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        /* ----- РЕДАКТОР ТЕСТА ----- */
+        .question-block {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+        .option-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .option-row input[type="text"] {
+            flex: 1;
+        }
+        /* ----- ПРОХОЖДЕНИЕ ТЕСТА ----- */
+        .test-header {
+            margin-bottom: 24px;
+        }
+        .progress {
+            height: 4px;
+            background: #ddd;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #1e1e1e;
+        }
+        .question-text {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 24px 0;
+        }
+        .answer-item {
+            padding: 16px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .answer-item.selected {
+            background: #1e1e1e;
+            color: white;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+        }
+        .result-screen {
+            text-align: center;
+        }
+        .score {
+            font-size: 64px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        .message {
+            padding: 16px;
+            background: #f0f0f0;
+            border-left: 4px solid #1e1e1e;
+            margin: 20px 0;
+        }
+        .error {
+            border-left-color: #c00;
+            background: #fee;
+        }
+        a {
+            color: #1e1e1e;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="app">
+    <!-- Динамический рендеринг: форма входа/регистрации или главное меню -->
+</div>
+
+<script>
+    (function(){
+        "use strict";
+
+        // ---------- КОНСТАНТЫ ----------
+        const ADMIN_CODE = 'ADMIN123';   // Код для входа в режим администратора
+        const STORAGE_TESTS = 'testroom_tests';
+        const STORAGE_USERS = 'testroom_users';
+        const SESSION_KEY = 'testroom_session';
+
+        // ---------- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ----------
+        let tests = [];                  // все тесты
+        let currentUser = null;          // { username, isAdmin }
+        let currentTest = null;          // активный тест (при прохождении)
+        let userAnswers = [];
+        let currentQIndex = 0;
+        let editingTestId = null;
+
+        const app = document.getElementById('app');
+
+        // ---------- РАБОТА С ХРАНИЛИЩЕМ ----------
+        function loadTests() {
+            const saved = localStorage.getItem(STORAGE_TESTS);
+            if (saved) {
+                tests = JSON.parse(saved);
+            } else {
+                // Демонстрационный тест
+                tests = [{
+                    id: '1',
+                    name: 'Демонстрационный тест',
+                    description: 'Базовые вопросы для проверки',
+                    code: 'DEMO01',
+                    createdAt: new Date().toISOString(),
+                    questions: [
+                        { text: 'Столица Франции?', options: ['Лондон','Берлин','Париж','Мадрид'], correct: [2] },
+                        { text: 'Какие планеты газовые гиганты?', options: ['Марс','Юпитер','Сатурн','Земля'], correct: [1,2] }
+                    ]
+                }];
+                saveTests();
+            }
+        }
+        function saveTests() {
+            localStorage.setItem(STORAGE_TESTS, JSON.stringify(tests));
+        }
+
+        function getUsers() {
+            const stored = localStorage.getItem(STORAGE_USERS);
+            return stored ? JSON.parse(stored) : [];
+        }
+        function saveUsers(users) {
+            localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+        }
+
+        function saveSession(user) {
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+        }
+        function loadSession() {
+            const sess = sessionStorage.getItem(SESSION_KEY);
+            if (sess) {
+                try { currentUser = JSON.parse(sess); } catch(e) { currentUser = null; }
+            }
+        }
+        function clearSession() {
+            sessionStorage.removeItem(SESSION_KEY);
+            currentUser = null;
+        }
+
+        // ---------- РЕНДЕРИНГ ОСНОВНОГО ИНТЕРФЕЙСА ----------
+        function render() {
+            if (!currentUser) {
+                renderAuthScreen();
+            } else {
+                renderMainMenu();
+            }
+        }
+
+        function renderAuthScreen() {
+            app.innerHTML = `
+                <h1>TestRoom</h1>
+                <div class="subtitle">Войдите или зарегистрируйтесь</div>
+                <div class="auth-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="login">Вход</div>
+                        <div class="tab" data-tab="register">Регистрация</div>
+                    </div>
+                    <div id="loginForm">
+                        <div class="form-group">
+                            <label>Логин</label>
+                            <input type="text" id="loginUsername" placeholder="Логин" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль</label>
+                            <input type="password" id="loginPassword" placeholder="Пароль">
+                        </div>
+                        <div id="loginError" class="error-message"></div>
+                        <button class="primary" id="loginBtn">Войти</button>
+                        <p style="margin-top:20px; font-size:14px; color:#666;">
+                            <a id="adminAccessLink">Администратор? Войти по коду</a>
+                        </p>
+                    </div>
+                    <div id="registerForm" style="display:none;">
+                        <div class="form-group">
+                            <label>Логин</label>
+                            <input type="text" id="regUsername" placeholder="Придумайте логин" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль</label>
+                            <input type="password" id="regPassword" placeholder="Пароль">
+                        </div>
+                        <div class="form-group">
+                            <label>Подтверждение</label>
+                            <input type="password" id="regPasswordConfirm" placeholder="Повторите пароль">
+                        </div>
+                        <div id="regError" class="error-message"></div>
+                        <button class="primary" id="registerBtn">Зарегистрироваться</button>
+                    </div>
+                </div>
+            `;
+            // Переключение вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const isLogin = tab.dataset.tab === 'login';
+                    document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+                    document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+                });
+            });
+            document.getElementById('loginBtn').addEventListener('click', login);
+            document.getElementById('registerBtn').addEventListener('click', register);
+            document.getElementById('adminAccessLink').addEventListener('click', openAdminCodeModal);
+            // Enter в полях
+            ['loginUsername','loginPassword','regUsername','regPassword','regPasswordConfirm'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('keypress', (e) => { if(e.key==='Enter') id.includes('reg') ? register() : login(); });
+            });
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            if (!username || !password) {
+                errorDiv.textContent = 'Заполните все поля';
+                return;
+            }
+            const users = getUsers();
+            const user = users.find(u => u.username === username && u.password === password);
+            if (!user) {
+                errorDiv.textContent = 'Неверный логин или пароль';
+                return;
+            }
+            currentUser = { username: user.username, isAdmin: false };
+            saveSession(currentUser);
+            render();
+        }
+
+        function register() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regPasswordConfirm').value;
+            const errorDiv = document.getElementById('regError');
+            if (!username || !password || !confirm) {
+                errorDiv.textContent = 'Заполните все поля';
+                return;
+            }
+            if (password !== confirm) {
+                errorDiv.textContent = 'Пароли не совпадают';
+                return;
+            }
+            if (password.length < 3) {
+                errorDiv.textContent = 'Пароль слишком короткий (мин. 3 символа)';
+                return;
+            }
+            const users = getUsers();
+            if (users.find(u => u.username === username)) {
+                errorDiv.textContent = 'Пользователь уже существует';
+                return;
+            }
+            users.push({ username, password });
+            saveUsers(users);
+            currentUser = { username, isAdmin: false };
+            saveSession(currentUser);
+            render();
+        }
+
+        function openAdminCodeModal() {
+            let modal = document.getElementById('adminCodeModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'adminCodeModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width:450px;">
+                        <div class="modal-header">
+                            <h2>Код администратора</h2>
+                            <button class="close-btn" onclick="window.closeModal('adminCodeModal')">&times;</button>
+                        </div>
+                        <input type="text" id="adminCodeInput" placeholder="${ADMIN_CODE}" style="text-transform:uppercase; font-size:24px; text-align:center; font-weight:600;" autocomplete="off">
+                        <div id="adminCodeError" class="message error" style="display:none;"></div>
+                        <div class="btn-group" style="justify-content:center;">
+                            <button class="primary" id="verifyAdminBtn">Войти как администратор</button>
+                            <button onclick="window.closeModal('adminCodeModal')">Отмена</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('verifyAdminBtn').addEventListener('click', verifyAdminCode);
+            }
+            document.getElementById('adminCodeInput').value = '';
+            document.getElementById('adminCodeError').style.display = 'none';
+            modal.classList.add('active');
+        }
+
+        function verifyAdminCode() {
+            const code = document.getElementById('adminCodeInput').value.trim().toUpperCase();
+            if (code !== ADMIN_CODE) {
+                document.getElementById('adminCodeError').textContent = 'Неверный код';
+                document.getElementById('adminCodeError').style.display = 'block';
+                return;
+            }
+            closeModal('adminCodeModal');
+            currentUser = { username: 'Администратор', isAdmin: true };
+            saveSession(currentUser);
+            render();
+        }
+
+        // Глобальное закрытие модалок
+        window.closeModal = function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('active');
+        };
+
+        // ---------- ГЛАВНОЕ МЕНЮ ----------
+        function renderMainMenu() {
+            const isAdmin = currentUser.isAdmin;
+            app.innerHTML = `
+                <div class="user-header">
+                    <h1>TestRoom</h1>
+                    <div>
+                        <span style="margin-right:20px;">👤 ${currentUser.username} ${isAdmin ? '(Админ)' : ''}</span>
+                        <button id="logoutBtn">Выйти</button>
+                    </div>
+                </div>
+                <div class="subtitle">${isAdmin ? 'Управление тестами и прохождение' : 'Проходите тесты по коду'}</div>
+                <div class="main-menu">
+                    <div class="menu-btn" id="takeTestBtn">🔑 Пройти тест</div>
+                    ${isAdmin ? `<div class="menu-btn" id="manageTestsBtn">⚙️ Управление тестами</div>` : ''}
+                </div>
+                <p style="text-align:center; color:#888;">Пример кода теста: <strong>DEMO01</strong></p>
+            `;
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('takeTestBtn').addEventListener('click', openUserModal);
+            if (isAdmin) {
+                document.getElementById('manageTestsBtn').addEventListener('click', openAdminPanel);
+            }
+        }
+
+        function logout() {
+            clearSession();
+            render();
+        }
+
+        // ---------- ПОЛЬЗОВАТЕЛЬ: ВВОД КОДА ТЕСТА ----------
+        function openUserModal() {
+            let modal = document.getElementById('userCodeModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'userCodeModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width:450px;">
+                        <div class="modal-header">
+                            <h2>Введите код теста</h2>
+                            <button class="close-btn" onclick="window.closeModal('userCodeModal')">&times;</button>
+                        </div>
+                        <input type="text" id="testCodeInput" placeholder="DEMO01" style="text-transform:uppercase; font-size:24px; text-align:center; font-weight:600;" autocomplete="off">
+                        <div id="testCodeError" class="message error" style="display:none;"></div>
+                        <div class="btn-group" style="justify-content:center;">
+                            <button class="primary" id="joinTestBtn">Начать тест</button>
+                            <button onclick="window.closeModal('userCodeModal')">Отмена</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('joinTestBtn').addEventListener('click', joinTest);
+            }
+            document.getElementById('testCodeInput').value = '';
+            document.getElementById('testCodeError').style.display = 'none';
+            modal.classList.add('active');
+        }
+
+        function joinTest() {
+            const code = document.getElementById('testCodeInput').value.trim().toUpperCase();
+            const test = tests.find(t => t.code === code);
+            if (!test) {
+                document.getElementById('testCodeError').textContent = 'Тест не найден';
+                document.getElementById('testCodeError').style.display = 'block';
+                return;
+            }
+            closeModal('userCodeModal');
+            startTest(test);
+        }
+
+        function startTest(test) {
+            currentTest = JSON.parse(JSON.stringify(test));
+            currentQIndex = 0;
+            userAnswers = currentTest.questions.map(() => []);
+            renderTestTakingModal();
+        }
+
+        function renderTestTakingModal() {
+            let modal = document.getElementById('testTakingModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'testTakingModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="takingTestTitle"></h2>
+                            <button class="close-btn" id="exitTestBtn">&times;</button>
+                        </div>
+                        <div id="takingContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('exitTestBtn').addEventListener('click', exitTest);
+            }
+            document.getElementById('takingTestTitle').textContent = currentTest.name;
+            renderTakingQuestion();
+            modal.classList.add('active');
+        }
+
+        function renderTakingQuestion() {
+            const q = currentTest.questions[currentQIndex];
+            const total = currentTest.questions.length;
+            const progress = (currentQIndex / total) * 100;
+            const content = document.getElementById('takingContent');
+            let html = `
+                <div class="test-header">
+                    <div>Вопрос ${currentQIndex+1} из ${total}</div>
+                    <div class="progress"><div class="progress-bar" style="width:${progress}%"></div></div>
+                </div>
+                <div class="question-text">${q.text}</div>
+                <div class="answers-list">
+            `;
+            q.options.forEach((opt, idx) => {
+                const selected = userAnswers[currentQIndex]?.includes(idx);
+                html += `<div class="answer-item ${selected ? 'selected' : ''}" data-opt="${idx}">${opt}</div>`;
+            });
+            html += `</div><div class="nav-buttons">`;
+            if (currentQIndex > 0) html += `<button id="prevBtn">← Назад</button>`;
+            else html += `<span></span>`;
+            if (currentQIndex < total-1) html += `<button class="primary" id="nextBtn">Далее →</button>`;
+            else html += `<button class="primary" id="finishBtn">Завершить</button>`;
+            html += `</div>`;
+            content.innerHTML = html;
+
+            content.querySelectorAll('.answer-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const idx = parseInt(el.dataset.opt);
+                    const arr = userAnswers[currentQIndex];
+                    const pos = arr.indexOf(idx);
+                    if (pos === -1) arr.push(idx);
+                    else arr.splice(pos, 1);
+                    renderTakingQuestion();
+                });
+            });
+            const prev = document.getElementById('prevBtn');
+            if (prev) prev.addEventListener('click', () => { currentQIndex--; renderTakingQuestion(); });
+            const next = document.getElementById('nextBtn');
+            if (next) next.addEventListener('click', () => { currentQIndex++; renderTakingQuestion(); });
+            const finish = document.getElementById('finishBtn');
+            if (finish) finish.addEventListener('click', finishTest);
+        }
+
+        function finishTest() {
+            let correct = 0;
+            currentTest.questions.forEach((q, i) => {
+                const user = userAnswers[i] || [];
+                const ans = q.correct;
+                if (user.length === ans.length && user.every(v => ans.includes(v))) correct++;
+            });
+            const total = currentTest.questions.length;
+            const percent = Math.round((correct/total)*100);
+            document.getElementById('takingContent').innerHTML = `
+                <div class="result-screen">
+                    <h2>Тест завершён</h2>
+                    <div class="score">${correct}/${total}</div>
+                    <p>${percent>=80?'Отлично!':percent>=50?'Хорошо':'Попробуйте ещё'}</p>
+                    <div class="btn-group" style="justify-content:center;">
+                        <button class="primary" id="restartBtn">Пройти заново</button>
+                        <button id="closeResultBtn">Закрыть</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('restartBtn').addEventListener('click', () => startTest(currentTest));
+            document.getElementById('closeResultBtn').addEventListener('click', exitTest);
+        }
+
+        function exitTest() {
+            currentTest = null;
+            closeModal('testTakingModal');
+        }
+
+        // ---------- АДМИН-ПАНЕЛЬ ----------
+        function openAdminPanel() {
+            let modal = document.getElementById('adminPanelModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'adminPanelModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Управление тестами</h2>
+                            <button class="close-btn" onclick="window.closeModal('adminPanelModal')">&times;</button>
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <button class="primary" id="createTestBtn">➕ Создать тест</button>
+                        </div>
+                        <div id="adminTestsList" class="tests-list"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('createTestBtn').addEventListener('click', createNewTest);
+            }
+            renderAdminTestsList();
+            modal.classList.add('active');
+        }
+
+        function renderAdminTestsList() {
+            const container = document.getElementById('adminTestsList');
+            if (tests.length === 0) {
+                container.innerHTML = '<div class="message">Нет тестов</div>';
+                return;
+            }
+            container.innerHTML = tests.map(test => `
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <strong>${test.name}</strong>
+                        <span class="test-code">${test.code}</span>
+                    </div>
+                    <div>${test.description || ''}</div>
+                    <div style="font-size:14px; color:#666;">Вопросов: ${test.questions.length}</div>
+                    <div class="test-actions">
+                        <button data-id="${test.id}" class="edit-btn">✏️ Редактировать</button>
+                        <button data-code="${test.code}" class="copy-btn">📋 Копировать код</button>
+                        <button data-id="${test.id}" class="danger delete-btn">🗑️ Удалить</button>
+                    </div>
+                </div>
+            `).join('');
+            container.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => editTest(b.dataset.id)));
+            container.querySelectorAll('.copy-btn').forEach(b => b.addEventListener('click', () => {
+                navigator.clipboard?.writeText(b.dataset.code).then(() => alert('Код скопирован'));
+            }));
+            container.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', () => {
+                if (confirm('Удалить тест?')) {
+                    tests = tests.filter(t => t.id !== b.dataset.id);
+                    saveTests();
+                    renderAdminTestsList();
+                }
+            }));
+        }
+
+        function generateCode() {
+            return Math.random().toString(36).substring(2,8).toUpperCase();
+        }
+
+        function createNewTest() {
+            editingTestId = null;
+            openTestEditor({ name: '', description: '', code: generateCode(), questions: [] });
+        }
+
+        function editTest(id) {
+            const test = tests.find(t => t.id === id);
+            if (test) {
+                editingTestId = id;
+                openTestEditor(JSON.parse(JSON.stringify(test)));
+            }
+        }
+
+        function openTestEditor(testData) {
+            let modal = document.getElementById('testEditorModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'testEditorModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="editorTitle">Редактор теста</h2>
+                            <button class="close-btn" onclick="window.closeModal('testEditorModal')">&times;</button>
+                        </div>
+                        <div id="editorContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            const content = document.getElementById('editorContent');
+            content.innerHTML = `
+                <div class="form-group"><label>Название</label><input type="text" id="editTestName" value="${testData.name || ''}"></div>
+                <div class="form-group"><label>Описание</label><textarea id="editTestDesc" rows="2">${testData.description || ''}</textarea></div>
+                <div class="form-group"><label>Код доступа</label><input type="text" id="editTestCode" value="${testData.code || generateCode()}" style="text-transform:uppercase;"></div>
+                <div id="questionsEditorContainer"></div>
+                <button id="addQuestionBtn" style="width:100%; margin:20px 0;">➕ Добавить вопрос</button>
+                <div class="btn-group">
+                    <button class="primary" id="saveTestBtn">Сохранить</button>
+                    <button onclick="window.closeModal('testEditorModal')">Отмена</button>
+                </div>
+            `;
+            const qContainer = document.getElementById('questionsEditorContainer');
+            function addQuestion(qData = null) {
+                const block = document.createElement('div');
+                block.className = 'question-block';
+                block.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>Вопрос ${qContainer.children.length+1}</h3>
+                        <button class="danger remove-question-btn">Удалить</button>
+                    </div>
+                    <div class="form-group"><label>Текст</label><input type="text" class="q-text" value="${qData?.text || ''}"></div>
+                    <div class="options-container"></div>
+                    <button class="add-option-btn">➕ Добавить вариант</button>
+                `;
+                qContainer.appendChild(block);
+                const optsDiv = block.querySelector('.options-container');
+                function addOptionRow(value='', isCorrect=false) {
+                    const row = document.createElement('div');
+                    row.className = 'option-row';
+                    row.innerHTML = `
+                        <input type="text" value="${value}" placeholder="Вариант">
+                        <label><input type="checkbox" ${isCorrect?'checked':''}> Правильный</label>
+                        <button class="danger remove-option-btn">×</button>
+                    `;
+                    optsDiv.appendChild(row);
+                    row.querySelector('.remove-option-btn').addEventListener('click', () => row.remove());
+                }
+                if (qData?.options) {
+                    qData.options.forEach((opt,i) => addOptionRow(opt, qData.correct?.includes(i)));
+                } else {
+                    addOptionRow('', false);
+                    addOptionRow('', false);
+                }
+                block.querySelector('.add-option-btn').addEventListener('click', () => addOptionRow('', false));
+                block.querySelector('.remove-question-btn').addEventListener('click', () => block.remove());
+            }
+            if (testData.questions.length) {
+                testData.questions.forEach(q => addQuestion(q));
+            } else {
+                addQuestion();
+            }
+            document.getElementById('addQuestionBtn').addEventListener('click', () => addQuestion());
+            document.getElementById('saveTestBtn').addEventListener('click', () => {
+                const name = document.getElementById('editTestName').value.trim();
+                const desc = document.getElementById('editTestDesc').value.trim();
+                const code = document.getElementById('editTestCode').value.trim().toUpperCase();
+                if (!name || !code) { alert('Введите название и код'); return; }
+                if (!editingTestId && tests.some(t => t.code === code)) { alert('Код уже используется'); return; }
+                const questions = [];
+                document.querySelectorAll('.question-block').forEach(block => {
+                    const text = block.querySelector('.q-text').value.trim();
+                    const options = [], correct = [];
+                    block.querySelectorAll('.option-row').forEach(row => {
+                        const inp = row.querySelector('input[type="text"]');
+                        const chk = row.querySelector('input[type="checkbox"]');
+                        if (inp.value.trim()) {
+                            options.push(inp.value.trim());
+                            if (chk.checked) correct.push(options.length-1);
+                        }
+                    });
+                    if (text && options.length && correct.length) questions.push({ text, options, correct });
+                });
+                if (questions.length === 0) { alert('Добавьте хотя бы один вопрос с правильными ответами'); return; }
+                const test = {
+                    id: editingTestId || Date.now().toString(),
+                    name, description: desc, code, questions,
+                    createdAt: editingTestId ? tests.find(t=>t.id===editingTestId).createdAt : new Date().toISOString()
+                };
+                if (editingTestId) tests = tests.map(t => t.id === editingTestId ? test : t);
+                else tests.push(test);
+                saveTests();
+                closeModal('testEditorModal');
+                if (document.getElementById('adminPanelModal').classList.contains('active')) renderAdminTestsList();
+            });
+            modal.classList.add('active');
+        }
+
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        function init() {
+            loadTests();
+            loadSession();
+            render();
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) e.target.classList.remove('active');
+            });
+        }
+        init();
+    })();
+</script>
+</body>
+</html>
