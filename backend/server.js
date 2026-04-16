@@ -9,27 +9,23 @@ app.use(bodyParser.json());
 let quizzes = [];
 let sessions = [];
 
-// Create quiz
 app.post('/api/quizzes', (req, res) => {
   const quiz = { id: Date.now(), ...req.body };
   quizzes.push(quiz);
   res.json(quiz);
 });
 
-// Get quiz
 app.get('/api/quizzes/:id', (req, res) => {
   const quiz = quizzes.find(q => q.id == req.params.id);
   res.json(quiz);
 });
 
-// Start session
 app.post('/api/start', (req, res) => {
   const session = { id: Date.now(), ...req.body, answers: [], score: 0 };
   sessions.push(session);
   res.json(session);
 });
 
-// Submit answers
 app.post('/api/submit', (req, res) => {
   const { sessionId, answers } = req.body;
   const session = sessions.find(s => s.id == sessionId);
@@ -48,3 +44,17 @@ app.post('/api/submit', (req, res) => {
 });
 
 app.listen(3001, () => console.log('Server running on 3001'));
+
+
+// File: backend/package.json
+
+{
+  "name": "quiz-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  }
+}

@@ -1,69 +1,17 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-
-export default function App() {
-  const [quizId, setQuizId] = useState('');
-  const [quiz, setQuiz] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [sessionId, setSessionId] = useState(null);
-  const [score, setScore] = useState(null);
-
-  const loadQuiz = async () => {
-    const res = await axios.get(`process.env.REACT_APP_API_URL/api/quizzes/${quizId}`);
-    setQuiz(res.data);
-
-    const session = await axios.post('process.env.REACT_APP_API_URL/api/start', {
-      quizId
-    });
-
-    setSessionId(session.data.id);
-  };
-
-  const submit = async () => {
-    const res = await axios.post('process.env.REACT_APP_API_URL/api/submit', {
-      sessionId,
-      answers
-    });
-    setScore(res.data.score);
-  };
-
-  if (!quiz) {
-    return (
-      <div>
-        <h1>Enter Quiz ID</h1>
-        <input value={quizId} onChange={e => setQuizId(e.target.value)} />
-        <button onClick={loadQuiz}>Start</button>
-      </div>
-    );
+{
+  "name": "quiz-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   }
-
-  return (
-    <div>
-      <h1>{quiz.title}</h1>
-
-      {quiz.questions.map((q, i) => (
-        <div key={i}>
-          <p>{q.text}</p>
-          {q.options.map((opt, idx) => (
-            <label key={idx}>
-              <input
-                type="radio"
-                name={i}
-                onChange={() => {
-                  const newAns = [...answers];
-                  newAns[i] = opt;
-                  setAnswers(newAns);
-                }}
-              />
-              {opt}
-            </label>
-          ))}
-        </div>
-      ))}
-
-      <button onClick={submit}>Submit</button>
-
-      {score !== null && <h2>Your score: {score}</h2>}
-    </div>
-  );
 }
